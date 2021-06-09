@@ -127,6 +127,63 @@ The puppet agent can apply manifest by accecpting a path as parameter. If the pa
 This can be done with:
     puppet apply /path/to/manifest
 
+Let's create a very simple manifest:
+    vi /etc/puppetlabs/code/environments/production/manifests
+
+Enter the following:
+```
+notify { "Hello":
+  message => "Hello 1",
+}
+``` 
+
+Now we can test it with:
+    puppet apply /etc/puppetlabs/code/environments/production/manifests/01.pp
+
+The output should ressemble the following:
+```
+Notice: Compiled catalog for vm-0.ma0z3b0xmbeuzduwooz1fwcpnd.ax.internal.cloudapp.net in environment production in 0.01 seconds
+Notice: Hello 1
+Notice: /Stage[main]/Main/Notify[Hello]/message: defined 'message' as 'Hello 1'
+Notice: Applied catalog in 0.04 seconds
+[root@vm-0 ~]# cat /etc/puppetlabs/code/environments/production/manifests/01.pp
+notify { "Hello":
+  message => "Hello 1",
+}
+```
+
+We can do the same with a relative path:  
+    cd /etc/puppetlabs/code/environments/production/manifests
+    puppet apply 01.pp
+
+If we create a second file called 02.pp we can illustrate that all the manifest within the directory are being processed in alphabetical order. For that create a second file:  
+    vi /etc/puppetlabs/code/environments/production/manifests/02.pp
+
+Enter the following:
+```
+notify { "Hello2":
+  message => "Hello 2",
+}
+``` 
+
+If you know run:
+    puppet apply /etc/puppetlabs/code/environments/production/manifests
+
+You should see the following:
+```
+Notice: Compiled catalog for vm-0.ma0z3b0xmbeuzduwooz1fwcpnd.ax.internal.cloudapp.net in environment production in 0.02 seconds
+Notice: Hello 1
+Notice: /Stage[main]/Main/Notify[Hello]/message: defined 'message' as 'Hello 1'
+Notice: Hello 2
+Notice: /Stage[main]/Main/Notify[Hello2]/message: defined 'message' as 'Hello 2'
+Notice: Applied catalog in 0.03 seconds
+[root@vm-0 production]# cat manifests/02.pp
+notify { "Hello2":
+  message => "Hello 2",
+}
+```
+
+
 # Puppet environments 
 We can create multiple devs by simpling creating the right directory structure:
     mkdir -p /etc/puppetlabs/code/environments/dev/manifests
@@ -152,6 +209,22 @@ or alternatively:
 
 Add these line to the bottom of .bashrc:  
     echo 'alias cdpp="cd $(puppet config print manifest)"' >> ~/.bashrc
+
+Then we should also reread our login script:
+    . ~/.bashrc
+
+# Resources in puppet
+Resources are the main building block of puppet. Puppet is declarative so we don't need to tell it how to install chrony for example. On RHEL / CentOS it will use dfn/yum, on Ubuntu apt and on Windows our good friend chocolatly.
+
+List all built-in resources types:
+    puppet resource --type
+
+Get help on a resource:
+    puppet describe service
+
+Sample how to use resource (example configuration):
+    puppet resource service chronyd
+
 
 
 
